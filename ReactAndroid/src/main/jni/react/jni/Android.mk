@@ -14,6 +14,7 @@ LOCAL_SRC_FILES := \
   JSLoader.cpp \
   JSLogging.cpp \
   JniJSModulesUnbundle.cpp \
+  JniTeresaJSModulesUnbundle.cpp \
   MethodInvoker.cpp \
   ModuleRegistryBuilder.cpp \
   NativeArray.cpp \

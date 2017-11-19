@@ -41,6 +41,7 @@ class CatalystInstanceImpl : public jni::HybridClass<CatalystInstanceImpl> {
   CatalystInstanceImpl();
 
   static bool isIndexedRAMBundle(const char *sourcePath);
+  static bool isTeresaUnbundle(const std::string& sourcePath);
 
   void initializeBridge(
       jni::alias_ref<ReactCallback::javaobject> callback,

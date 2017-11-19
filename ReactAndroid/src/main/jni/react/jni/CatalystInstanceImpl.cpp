@@ -22,6 +22,7 @@
 #include "CxxModuleWrapper.h"
 #include "JavaScriptExecutorHolder.h"
 #include "JniJSModulesUnbundle.h"
+#include "JniTeresaJSModulesUnbundle.h"
 #include "JNativeRunnable.h"
 #include "NativeArray.h"
 
@@ -182,6 +183,10 @@ void CatalystInstanceImpl::jniLoadScriptFromAssets(
   const int kAssetsLength = 9;  // strlen("assets://");
   auto sourceURL = assetURL.substr(kAssetsLength);
 
+  FBLOG(LOG_WARN, "jacksonke-rn", "jniLoadScriptFromAssets .......");
+  FBLOG(LOG_WARN, "jacksonke-rn", "sourceURL=%s", sourceURL.c_str());
+  // __android_log_write(ANDROID_LOG_INFO, "jacksonke", "============= jacksonke test =============");
+
   auto manager = extractAssetManager(assetManager);
   auto script = loadScriptFromAssets(manager, sourceURL);
   if (JniJSModulesUnbundle::isUnbundle(manager, sourceURL)) {
@@ -194,6 +199,11 @@ void CatalystInstanceImpl::jniLoadScriptFromAssets(
   } else {
     instance_->loadScriptFromString(std::move(script), sourceURL, loadSynchronously);
   }
+}
+
+bool CatalystInstanceImpl::isTeresaUnbundle(const std::string& sourcePath){
+  // todo by jacksonke
+  return JniTeresaJSModulesUnbundle::isUnbundle(sourcePath);
 }
 
 bool CatalystInstanceImpl::isIndexedRAMBundle(const char *sourcePath) {
@@ -210,6 +220,8 @@ bool CatalystInstanceImpl::isIndexedRAMBundle(const char *sourcePath) {
 void CatalystInstanceImpl::jniLoadScriptFromFile(const std::string& fileName,
                                                  const std::string& sourceURL,
                                                  bool loadSynchronously) {
+  FBLOG(LOG_WARN, "jacksonke-rn", "jniLoadScriptFromFile .......");
+  FBLOG(LOG_WARN, "jacksonke-rn", "fileName=%s, sourceURL=%s", fileName.c_str(), sourceURL.c_str());
   auto zFileName = fileName.c_str();
   if (isIndexedRAMBundle(zFileName)) {
     auto bundle = folly::make_unique<JSIndexedRAMBundle>(zFileName);
@@ -219,7 +231,17 @@ void CatalystInstanceImpl::jniLoadScriptFromFile(const std::string& fileName,
       std::move(startupScript),
       sourceURL,
       loadSynchronously);
+  } else if (isTeresaUnbundle(fileName)){
+    FBLOG(LOG_WARN, "jacksonke-rn", "is Apf-unbundle");
+    auto bundle = folly::make_unique<JniTeresaJSModulesUnbundle>(fileName);
+    auto startupScript = bundle->getStartupCode();
+    instance_->loadUnbundle(
+      std::move(bundle),
+      std::move(startupScript),
+      sourceURL,
+      loadSynchronously);
   } else {
+    FBLOG(LOG_WARN, "jacksonke-rn", "using default-bundle-file");
     std::unique_ptr<const JSBigFileString> script;
     RecoverableError::runRethrowingAsRecoverable<std::system_error>(
       [&fileName, &script]() {
